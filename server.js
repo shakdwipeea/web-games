@@ -5,6 +5,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
 var fs = require('fs');
+var total = fs.readFileSync('total');
 
 server.listen(8080);
 
@@ -24,6 +25,7 @@ io.on('connection', function (socket) {
   }
   
   socket.on('submit', function (score) {
+    total++;
     scores.push(score);
     sendTop();
     saveScore();
@@ -40,4 +42,5 @@ function getTopScores() {
 
 function saveScore() {
   fs.writeFileSync('scores.json', JSON.stringify(scores));
+  fs.writeFileSync('total', total);
 }
