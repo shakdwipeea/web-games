@@ -4,7 +4,7 @@
 
 	socket.on('top', Template.displayScore);
 
-	var game = new Phaser.Game(768, 600, Phaser.AUTO, '');
+	var game = new Phaser.Game(768, 600, Phaser.CANVAS, '');
 
 	// Add all the states in the game
 	game.state.add('boot', Boot);

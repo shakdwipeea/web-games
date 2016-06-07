@@ -21,7 +21,9 @@ Game.prototype.init = function(socket) {
 };
 
 Game.prototype.create = function() {
-	this.cursors = this.game.input.keyboard.createCursorKeys();
+
+    //initially paused attribute is false
+    this.game.paused = false;
 
     this.game.stage.backgroundColor = "#fff";
 
@@ -41,6 +43,7 @@ Game.prototype.create = function() {
 
     //Create missile phaser group
     this.missiles = this.game.add.group();
+    //this.missiles.enableBody = true;
 
     this.scoreText = this.game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
@@ -52,10 +55,22 @@ Game.prototype.create = function() {
 
     //Set up missileSpeed
     this.missileTimer = this.game.time.events.loop(this.counter, this.updateMissiles, this);
+
+    this.cursors = this.game.input.keyboard.createCursorKeys();
+
+    //
+    var spacebarKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    spacebarKey.onDown.add(this.managePause, this);
+    
+};
+
+Game.prototype.managePause = function() {
+    this.game.paused = (!this.game.paused) ? true : false;
 };
 
 Game.prototype.update = function() {
 	//Reset velocity
+    console.log("Hi")
 	this.player.body.velocity.x = 0;
 
 	if (this.cursors.left.isDown) {
