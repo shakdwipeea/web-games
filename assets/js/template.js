@@ -15,6 +15,13 @@ var Template = {
 
 	    high.innerHTML = "";
 	    high.appendChild(table);
+	},
+
+	displayName: function (name) {
+		var input = document.getElementById('name');
+		input.style.display = 'none';
+
+		document.getElementById('saved-name').innerHTML = name;
 	}
 
 }
