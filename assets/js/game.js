@@ -70,7 +70,6 @@ Game.prototype.managePause = function() {
 
 Game.prototype.update = function() {
 	//Reset velocity
-    console.log("Hi")
 	this.player.body.velocity.x = 0;
 
 	if (this.cursors.left.isDown) {
