@@ -1,5 +1,5 @@
 //Socket io connection
-var socket = io.connect('http://192.168.1.7:8080');
+var socket = io.connect();
 
 var game = new Phaser.Game(768, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update }, true);
 
@@ -12,7 +12,7 @@ var missiles,
     enemyMissiles;
 
 //Scores
-var maxHealth = 300;
+var maxHealth = 100;
 
 var playerHealth = maxHealth,
     player2Health = maxHealth;
