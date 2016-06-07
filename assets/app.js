@@ -27,6 +27,7 @@ var mBar;
 
 var expSound;
 
+
 function preload() {
 	game.load.image('aero', 'aeroplane.png');	
     game.load.image('missile', 'missile.png');
@@ -98,6 +99,7 @@ function update() {
         if (playerHealth <= 0) {
             p.kill();
             gameOver = true;
+            saveScore();
         } else {
             playerHealth -= 20;
 
@@ -109,6 +111,13 @@ function update() {
 
 }
 
+function saveScore() {
+    socket.emit('submit', {
+        value: score,
+        name: document.getElementById('name').value
+    });
+}
+
 function createMissile() {
     var x = Math.random() * game.world.width;
 
@@ -117,6 +126,7 @@ function createMissile() {
     game.physics.arcade.enable(missile);
     missile.body.velocity.y = umis;
     missile.checkWorldBounds = true;
+    missile.outOfBoundsKill = true;
 
     //Check when missile is passed successfully
     missile.events.onOutOfBounds.add(function () {
@@ -136,6 +146,7 @@ function createRedMissile() {
     game.physics.arcade.enable(missile);
     missile.body.velocity.y = umis * 1.2;
     missile.checkWorldBounds = true;
+    missile.outOfBoundsKill = true;
 
     //Check when missile is passed successfully
     missile.events.onOutOfBounds.add(function () {
@@ -164,3 +175,25 @@ var mHandler = function () {
 
 }
 var missileInt = setInterval(mHandler, counter);
+
+socket.on('top', function (scores) {
+    displayScore(scores); 
+});
+
+function displayScore(scores) {
+    var high = document.getElementById('high');
+    var table = document.createElement('table');
+
+    for (var i = 0; i < scores.length; i++) {
+        var row = table.insertRow(i);
+
+        var cell1 = row.insertCell(0);
+        cell1.innerHTML = scores[i].name;
+
+        var cell2 = row.insertCell(1);
+        cell2.innerHTML = scores[i].value;
+    }
+
+    high.innerHTML = "";
+    high.appendChild(table);
+}
