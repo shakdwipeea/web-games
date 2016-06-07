@@ -8,6 +8,6 @@ Over.prototype.init = function(score, socket) {
 Over.prototype.create = function() {
 	this.socket.emit('submit', {
 		value: this.score,
-		name: document.getElementById('name').value || 'Default'
+		name: document.getElementById('name').value || localStorage.getItem('name')
 	});
 };
