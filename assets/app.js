@@ -1,45 +1,53 @@
 //Socket io connection
 var socket = io.connect();
 
-var game = new Phaser.Game(768, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update }, true);
+var game = new Phaser.Game(768, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 var cursors,
-    player,
-    player2;
+    player;
 
 // Missile Phaser Groups
-var missiles,
-    enemyMissiles;
+var missiles;
 
-//Scores
+//Initial normal missile velocity
+var umis = -120;
+
 var maxHealth = 100;
 
-var playerHealth = maxHealth,
-    player2Health = maxHealth;
+var gameOver = false;
 
-//Health bars
-var eBar,
-    mbar;
+//Scores
+var playerHealth = maxHealth;
+var score = 0;
+
+var scoreText;
+
+//Health bar
+var mBar;
+
+var expSound;
 
 function preload() {
-	game.load.image('harry', 'harry.png');	
+	game.load.image('aero', 'aeroplane.png');	
     game.load.image('missile', 'missile.png');
+    game.load.image('redm', 'red_missile.png');
+
+    game.load.audio('exp', 'exp.mp3');
 }
 
 function create() {
     cursors = game.input.keyboard.createCursorKeys();
 
+    game.stage.backgroundColor = "#fff";
+
     //  We're going to be using physics, so enable the Arcade Physics system
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-	// The player and its settings
-    player = game.add.sprite(32, game.world.height - 150, 'harry');
-    player2 = game.add.sprite(32, 35, 'harry');
+    //Add explosion sound to game
+    music = game.add.audio('exp');
 
-    //enemy health bar
-    eBar = game.add.graphics();
-    eBar.lineStyle(7, 0x0000ff, 1);
-    eBar.lineTo(game.width, 0);
+	// The player and its settings
+    player = game.add.sprite(70, game.world.height / 2 - 150, 'aero');
 
     // my health bar
     mBar = game.add.graphics(0, game.world.height);
@@ -49,20 +57,13 @@ function create() {
     //Create missile phaser group
     missiles = game.add.group();
 
-    // Enemy Missile group
-    enemyMissiles = game.add.group();
+    scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
     //  We need to enable physics on the player
     game.physics.arcade.enable(player);
-    game.physics.arcade.enable(player2);
 
-    //  Player physics properties. Give the little guy a slight bounce.
-    player.body.bounce.y = 0.2;
-    player.body.gravity.y = 300;
+    //  Player physics properties.
     player.body.collideWorldBounds = true;
-
-    // 2nd Player props
-    player2.body.collideWorldBounds = true;
 }
 
 function update() {
@@ -72,20 +73,14 @@ function update() {
     if (cursors.left.isDown)
     {
         //  Move to the left
-        player.body.velocity.x = -150;
-        player.x -= 20;
-
-        socket.emit('go-left');
-
-        //player.animations.play('left');
+        player.body.velocity.x = -100;
+        player.x -= 5;
     }
     else if (cursors.right.isDown)
     {
         //  Move to the right
-        player.body.velocity.x = 150;
-        player.x += 20;
-
-        socket.emit('go-right')
+        player.body.velocity.x = 100;
+        player.x += 5;
     }
     else
     {
@@ -95,84 +90,77 @@ function update() {
         player.frame = 4;
     }
 
-    if (cursors.up.isDown) {
-        var missile = missiles.create(player.body.x, player.body.y  , 'missile');
-        game.physics.arcade.enable(missile);
-        missile.body.velocity.y = -120;
-
-        socket.emit('missile');
-    }
-
-    //  Allow the player to jump if they are touching the ground.
-    if (cursors.up.isDown && player.body.touching.down)
-    {
-        player.body.velocity.y = -350;
-    }
-
-    // When the missile hits the enemy
-    game.physics.arcade.collide(player2, missiles, (p, m) => m.kill());
-
     // When enemy missile hits me
-    game.physics.arcade.collide(player, enemyMissiles, (p, m) => {
+    game.physics.arcade.collide(player, missiles, null, (p, m) => {
+        music.play();
         m.kill();
 
         if (playerHealth <= 0) {
             p.kill();
-            socket.emit('dead');
+            gameOver = true;
         } else {
-            playerHealth -= 3;
+            playerHealth -= 20;
 
             var pHealth = playerHealth / maxHealth;
             mBar.width = pHealth;
-
-            socket.emit('hit');
         }
+        return false;
     });    
 
-    // When my missile hits enemy missile
-    game.physics.arcade.collide(missiles, enemyMissiles, (m1, m2) => {
-        console.log('Kill em all');
-        m2.kill();
-        m1.kill();
+}
+
+function createMissile() {
+    var x = Math.random() * game.world.width;
+
+    // Create a missile
+    var missile = missiles.create(x, game.world.height , 'missile');
+    game.physics.arcade.enable(missile);
+    missile.body.velocity.y = umis;
+    missile.checkWorldBounds = true;
+
+    //Check when missile is passed successfully
+    missile.events.onOutOfBounds.add(function () {
+        score = gameOver ? score : score + 1;
+        scoreText.text = "Score: " + score;
+    });
+
+   // umis -= 5;
+}
+
+
+function createRedMissile() {
+    var x = Math.random() * game.world.width;
+
+    // Create a missile
+    var missile = missiles.create(x, game.world.height , 'redm');
+    game.physics.arcade.enable(missile);
+    missile.body.velocity.y = umis * 1.2;
+    missile.checkWorldBounds = true;
+
+    //Check when missile is passed successfully
+    missile.events.onOutOfBounds.add(function () {
+        score = gameOver ? score : score + 2;
+        scoreText.text = "Score: " + score;
     });
 }
 
-//2nd player movement
-socket.on('go-left', function () {
-    //move 2nd player to left 
+var counter = 1000;
+var mHandler = function () {
+    createMissile();
+    
 
-    player2.body.velocity.x = -150;
-    player2.x -= 20;
 
-     player2.body.velocity.x = 0;
-});
+    if (score != 0 && score % 20 === 0) {
+        var n = counter - 200;
+        counter = n > 300 ? n : 300;
+        clearInterval(missileInt);
+        missileInt = setInterval(mHandler, counter);
+    }
 
-socket.on('go-right', function () {
-    //move 2nd Player to right
-    player2.body.velocity.x = 150;
-    player2.x += 20;
+    if (score > 100) {
+        game.stage.backgroundColor = "#ffb3b3";
+        createRedMissile();
+    }
 
-    player2.body.velocity.x = 0;
-});
-
-socket.on('missile', function () {
-    var missile = enemyMissiles.create(player2.body.x, player2.body.y, 'missile');
-    game.physics.arcade.enable(missile);
-    missile.body.velocity.y = 120;
-});
-
-// Here the health status is monitored purely on client side
-// Every player is responsible for maintaining his health state and
-// conveying this to the other player
-socket.on('hit', function () {
-    console.log('Hit');
-    player2Health -= 3;
-
-    var pHealth = player2Health / maxHealth;
-    eBar.width = pHealth;
-
-});
-
-socket.on('dead', function () {
-    player2.kill();
-})
+}
+var missileInt = setInterval(mHandler, counter);
