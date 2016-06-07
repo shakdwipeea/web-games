@@ -13,6 +13,9 @@ Game.prototype.init = function() {
 
 	// Player score
 	this.score = 0;
+
+	// Timer for increasing missiles
+	this.counter = 1000;
 };
 
 Game.prototype.create = function() {
@@ -45,6 +48,8 @@ Game.prototype.create = function() {
     //  Player physics properties.
     this.player.body.collideWorldBounds = true;
 
+    //Set up missileSpeed
+    this.missileTimer = this.game.time.events.loop(this.counter, this.updateMissiles, this);
 };
 
 Game.prototype.update = function() {
@@ -56,6 +61,8 @@ Game.prototype.update = function() {
 	} else if (this.cursors.right.isDown) {
 		this.moveRight();
 	}
+
+	this.game.physics.arcade.collide(this.player, this.missiles, null, this.collisonHandler.bind(this));
 };
 
 Game.prototype.moveLeft = function() {
@@ -68,4 +75,82 @@ Game.prototype.moveRight = function() {
 	//  Move to the right
     this.player.body.velocity.x = 100;
     this.player.x += 5;
+};
+
+Game.prototype.collisonHandler = function(player, missile) {
+	this.music.play();
+	missile.kill();
+
+	if (this.health <= 0) {
+		player.kill();
+		this.gameOver = true;
+		//saveScore()
+	} else {
+		this.health -= 20;
+		this.mBar.width = this.health / 100;
+	}
+
+	//We dont want actual collisons
+	return false;
+};
+
+Game.prototype.updateMissiles = function() {	
+	console.log(this.missileTimer.delay);
+	this.createMissile();
+
+	if (this.score > 0 && this.score % 20 === 0) {
+		var n = this.counter - 200;
+
+		// We dont want the intervals to go below 300ms
+		this.counter = n > 300 ? n : 300;
+
+		// update the timer 
+		this.missileTimer.delay = this.counter;
+	}
+
+	if (this.score > 100) {
+		// Next level. Launch Red Missile
+		this.game.stage.backgroundColor = "#ffb3b3";
+        this.createRedMissile();
+	}
+};
+
+Game.prototype.createMissile = function() {
+	var x = Math.random() * this.game.world.width;
+
+    // Create a missile
+    var missile = this.missiles.create(x, this.game.world.height , 'missile');
+    this.game.physics.arcade.enable(missile);
+    missile.body.velocity.y = this.missileSpeed;
+    missile.checkWorldBounds = true;
+    missile.outOfBoundsKill = true;
+
+    var self = this;
+    //Check when missile is passed successfully
+    missile.events.onOutOfBounds.add(function () {
+        self.score = self.gameOver ? self.score : self.score + 1;
+        self.scoreText.text = "Score: " + self.score;
+    });
+
+    // slowly increase missile speed
+   	this.missileSpeed -= 1;
+};
+
+Game.prototype.createRedMissile = function() {
+	 var x = Math.random() * this.game.world.width;
+
+    // Create a missile
+    var missile = this.missiles.create(x, this.game.world.height , 'redm');
+    this.game.physics.arcade.enable(missile);
+    missile.body.velocity.y = this.missileSpeed * 1.2;
+    missile.checkWorldBounds = true;
+    missile.outOfBoundsKill = true;
+
+    var self = this;
+    //Check when missile is passed successfully
+    missile.events.onOutOfBounds.add(function () {
+    	// 2 points for Red Missile
+        self.score = self.gameOver ? self.score : self.score + 2;
+        self.scoreText.text = "Score: " + self.score;
+    });
 };
