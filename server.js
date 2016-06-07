@@ -34,7 +34,7 @@ io.on('connection', function (socket) {
 });
 
 function getTopScores() {
-  scores.sort((a, b) => a.value - b.value);
+  scores.sort((a, b) => b.value - a.value);
   return scores.slice(0, 10);
 }
 

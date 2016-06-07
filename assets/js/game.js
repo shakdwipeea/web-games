@@ -1,6 +1,6 @@
 var Game = function (game) {};
 
-Game.prototype.init = function() {
+Game.prototype.init = function(socket) {
 	
 	// Missile goes up hence -ve
 	this.missileSpeed = -120;
@@ -16,6 +16,8 @@ Game.prototype.init = function() {
 
 	// Timer for increasing missiles
 	this.counter = 1000;
+
+	this.socket = socket;
 };
 
 Game.prototype.create = function() {
@@ -84,7 +86,7 @@ Game.prototype.collisonHandler = function(player, missile) {
 	if (this.health <= 0) {
 		player.kill();
 		this.gameOver = true;
-		//saveScore()
+		this.game.state.start('over', false, false, this.score, this.socket);
 	} else {
 		this.health -= 20;
 		this.mBar.width = this.health / 100;
@@ -95,7 +97,6 @@ Game.prototype.collisonHandler = function(player, missile) {
 };
 
 Game.prototype.updateMissiles = function() {	
-	console.log(this.missileTimer.delay);
 	this.createMissile();
 
 	if (this.score > 0 && this.score % 20 === 0) {

@@ -1,5 +1,9 @@
 var Preload = function (game) {}
 
+Preload.prototype.init = function(socket) {
+	this.socket = socket;
+};
+
 Preload.prototype.preload = function() {
 	// load all sprite images
 	this.game.load.image('aero', 'aeroplane.png');	
@@ -12,5 +16,5 @@ Preload.prototype.preload = function() {
 
 Preload.prototype.create = function() {
 	// start the next state
-	this.game.state.start('game');
+	this.game.state.start('game', true, false, this.socket);
 };
