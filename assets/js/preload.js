@@ -28,7 +28,7 @@ Preload.prototype.create = function() {
 Preload.prototype.handleStartGame = function() {
 	var name = this.getName();
 
-	if (name === "") {
+	if (name === "" || name === null) {
 		alert('Enter Name before starting game');
 	} else {
 		this.saveName(name);
