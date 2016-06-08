@@ -32,6 +32,7 @@ Game.prototype.create = function() {
 
     //Add explosion sound to game
     this.music = this.game.add.audio('exp');
+    this.healthSound = this.game.add.audio('up');
 
 	// The player and its settings
     this.player = this.game.add.sprite(70, this.game.world.height / 2 - 150, 'aero');
@@ -43,7 +44,9 @@ Game.prototype.create = function() {
 
     //Create missile phaser group
     this.missiles = this.game.add.group();
-    //this.missiles.enableBody = true;
+    
+    //Create health group.
+    this.healthMissiles = this.game.add.group();
 
     this.scoreText = this.game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
@@ -78,7 +81,11 @@ Game.prototype.update = function() {
 		this.moveRight();
 	}
 
+    //Fatal collison
 	this.game.physics.arcade.collide(this.player, this.missiles, null, this.collisonHandler.bind(this));
+
+    //Get health
+    this.game.physics.arcade.collide(this.player, this.healthMissiles, null, this.healthHandler.bind(this));
 };
 
 Game.prototype.moveLeft = function() {
@@ -110,6 +117,18 @@ Game.prototype.collisonHandler = function(player, missile) {
 	return false;
 };
 
+Game.prototype.healthHandler = function(player, missile) {
+    this.healthSound.play();
+    missile.kill();
+
+    if (this.health < 100) {
+        this.health += 20;
+        this.mBar.width = this.health / 100;
+    }
+
+    return false;
+};
+
 Game.prototype.updateMissiles = function() {	
 	this.createMissile();
 
@@ -128,6 +147,10 @@ Game.prototype.updateMissiles = function() {
 		this.game.stage.backgroundColor = "#ffb3b3";
         this.createRedMissile();
 	}
+
+    if (this.score > 0 && this.score % 50 === 0) {
+        this.createHealthMissile();
+    }
 };
 
 Game.prototype.createMissile = function() {
@@ -152,7 +175,7 @@ Game.prototype.createMissile = function() {
 };
 
 Game.prototype.createRedMissile = function() {
-	 var x = Math.random() * this.game.world.width;
+	var x = Math.random() * this.game.world.width;
 
     // Create a missile
     var missile = this.missiles.create(x, this.game.world.height , 'redm');
@@ -168,4 +191,15 @@ Game.prototype.createRedMissile = function() {
         self.score = self.gameOver ? self.score : self.score + 2;
         self.scoreText.text = "Score: " + self.score;
     });
+};
+
+Game.prototype.createHealthMissile = function() {
+    var x = Math.random() * this.game.world.width;
+
+    // Create a missile
+    var missile = this.healthMissiles.create(x, this.game.world.height , 'health');
+    this.game.physics.arcade.enable(missile);
+    missile.body.velocity.y = this.missileSpeed * 1.4;
+    missile.checkWorldBounds = true;
+    missile.outOfBoundsKill = true;
 };

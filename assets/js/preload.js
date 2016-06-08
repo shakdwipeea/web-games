@@ -9,9 +9,11 @@ Preload.prototype.preload = function() {
 	this.game.load.image('aero', 'aeroplane.png');	
     this.game.load.image('missile', 'missile.png');
     this.game.load.image('redm', 'red_missile.png');
+    this.game.load.image('health', 'health.png')
 
     // load crash music
     this.game.load.audio('exp', 'exp.mp3');
+    this.game.load.audio('up', 'up.mp3');
 };
 
 Preload.prototype.create = function() {
