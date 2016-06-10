@@ -21,7 +21,7 @@ io.on('connection', function (socket) {
 
   function sendTop() {
     var topScores = getTopScores();
-    socket.emit('top', topScores);
+    socket.broadcast.emit('top', topScores);
   }
   
   socket.on('submit', function (score) {
