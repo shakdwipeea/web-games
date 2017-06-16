@@ -7,7 +7,11 @@ var io = require('socket.io')(server);
 var fs = require('fs');
 var total = fs.readFileSync('total');
 
-server.listen(8080);
+// set the port of our application
+// process.env.PORT lets the port be set by Heroku
+var port = process.env.PORT || 8080;
+
+server.listen(port);
 
 var scores = JSON.parse(fs.readFileSync('scores.json'));
 
