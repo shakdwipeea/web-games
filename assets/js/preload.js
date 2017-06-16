@@ -6,7 +6,7 @@ Preload.prototype.init = function(socket) {
 
 Preload.prototype.preload = function() {
 	// load all sprite images
-	this.game.load.image('aero', 'aeroplane.png');	
+    this.game.load.image('aero', 'aeroplane.png');	
     this.game.load.image('missile', 'missile.png');
     this.game.load.image('redm', 'red_missile.png');
     this.game.load.image('health', 'health.png')
