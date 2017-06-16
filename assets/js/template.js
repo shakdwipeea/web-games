@@ -1,6 +1,7 @@
 var Template = {
 	
 	displayScore: function(scores) {
+            console.log("Scores are ", scores);
 	    var high = document.getElementById('high');
 	    var table = document.createElement('table');
 
