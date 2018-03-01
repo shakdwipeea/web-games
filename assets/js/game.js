@@ -61,6 +61,12 @@ Game.prototype.create = function() {
 
     this.cursors = this.game.input.keyboard.createCursorKeys();
 
+    this.stateText = this.game.add.text(this.game.world.centerX,this.game.world.centerY,' ', { font: '84px Arial', fill: 'blue' });
+
+    this.stateText.anchor.setTo(0.5, 0.5);
+
+    this.stateText.visible = false;
+
     //
     var spacebarKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     spacebarKey.onDown.add(this.managePause, this);
@@ -107,7 +113,10 @@ Game.prototype.collisonHandler = function(player, missile) {
 	if (this.health <= 0) {
 		player.kill();
 		this.gameOver = true;
+        this.stateText.text = " GAME OVER ";
+        this.stateText.visible = true;
 		this.game.state.start('over', false, false, this.score, this.socket);
+
 	} else {
 		this.health -= 20;
 		this.mBar.width = this.health / 100;
